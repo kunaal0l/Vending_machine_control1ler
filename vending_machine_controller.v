@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps
 
-module vending_machine(
+module v_machine(
     input clk,
     input reset,
     input select_products,       // 0: chocolate ($15), 1: drink ($10)
     input [1:0] coin,            // 00: $0, 01: $5, 10: $10
     output reg out,
-    output reg [1:0] change      // in $1 units
+    output reg [3:0] change      // in $1 units
 );
 
     parameter s0 = 2'b00;
@@ -50,7 +50,7 @@ module vending_machine(
                             if (coin == 2'b00) begin
                                 next_state <= s0;
                                 out <= 0;
-                                change <= 2'd5;
+                                change <= 3'd5;
                             end else if (coin == 2'b01) begin
                                 next_state <= s2;
                                 out <= 0;
@@ -66,7 +66,7 @@ module vending_machine(
                             if (coin == 2'b00) begin
                                 next_state <= s0;
                                 out <= 0;
-                                change <= 2'd10;
+                                change <= 4'd10;
                             end else if (coin == 2'b01) begin
                                 next_state <= s0;
                                 out <= 1;
@@ -74,7 +74,7 @@ module vending_machine(
                             end else begin
                                 next_state <= s0;
                                 out <= 1;
-                                change <= 2'd5;
+                                change <= 3'd5;
                             end
                         end
                     endcase
@@ -102,7 +102,7 @@ module vending_machine(
                             if (coin == 2'b00) begin
                                 next_state <= s0;
                                 out <= 0;
-                                change <= 2'd5;
+                                change <= 3'd5;
                             end else if (coin == 2'b01) begin
                                 next_state <= s2;
                                 out <= 1;
@@ -110,7 +110,7 @@ module vending_machine(
                             end else begin
                                 next_state <= s0;
                                 out <= 1;
-                                change <= 2'd5;
+                                change <= 3'd5;
                             end
                         end
                     endcase
