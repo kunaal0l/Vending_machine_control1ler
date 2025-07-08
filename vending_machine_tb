@@ -1,55 +1,72 @@
 `timescale 1ns / 1ps
 
-module vending_machine_tb;
+module v_machine_tb;
 
-    reg clk, reset;
-    reg [1:0] coin;
+    reg clk;
+    reg reset;
+    reg select_products;      // 0: choco, 1: drink
+    reg [1:0] coin;           // 00: $0, 01: $5, 10: $10
     wire out;
     wire [1:0] change;
 
-    // Instantiate the DUT
-    vending_machine uut (
+    v_machine uut (
         .clk(clk),
         .reset(reset),
+        .select_products(select_products),
         .coin(coin),
         .out(out),
         .change(change)
     );
 
-    // Generate clock
+    // Clock generation
     always #5 clk = ~clk;
 
     initial begin
-        // Initialize inputs
+        $display("Starting Testbench");
+        $monitor("Time=%0t | Reset=%b | Select=%b | Coin=%b | Out=%b | Change=%d", 
+                 $time, reset, select_products, coin, out, change);
+
+        // Initial values
         clk = 0;
         reset = 1;
+        select_products = 0;
         coin = 2'b00;
 
-        // Apply reset
+        // Reset pulse
         #10 reset = 0;
 
-        // === Test Case 1: Insert $5, then $5 ===
-        #10 coin = 2'b01; // $5
-        #10 coin = 2'b01; // $5 → total $10 → dispense
+        // ----------- TEST 1: Buy chocolate with $5 + $10 (total = $15) -----------
+        select_products = 0; // chocolate
+        coin = 2'b01;  // $5
+        #10;
+        coin = 2'b10;  // $10
+        #10;
 
-        // === Test Case 2: Insert $10 ===
-        #10 coin = 2'b10; // $10 → dispense directly
+        // ----------- TEST 2: Buy drink with $10 -----------
+        select_products = 1; // drink
+        coin = 2'b10;  // $10
+        #10;
 
-        // === Test Case 3: Insert $5, then $10 ===
-        #10 coin = 2'b01; // $5
-        #10 coin = 2'b10; // $10 → should dispense, return $5 change
+        // ----------- TEST 3: Buy drink with $5 + $5 -----------
+        coin = 2'b01;  // $5
+        #10;
+        coin = 2'b01;  // $5
+        #10;
 
-        // === Test Case 4: Reset and idle ===
-        #10 reset = 1;
-        #10 reset = 0;
-        #10 coin = 2'b00; // No coin → no change, no out
+        // ----------- TEST 4: Buy chocolate with $10 + $10 (expect $5 change) -----------
+        select_products = 0; // chocolate
+        coin = 2'b10;  // $10
+        #10;
+        coin = 2'b10;  // $10
+        #10;
 
-        #20 $finish;
-    end
+        // ----------- TEST 5: Insert $0 -----------
+        coin = 2'b00;
+        #10;
 
-    initial begin
-        $monitor("Time=%0t | Coin=%b | Out=%b | Change=%d | State=%b",
-                  $time, coin, out, change, uut.current_state);
+        // Finish simulation
+        #20;
+        $finish;
     end
 
 endmodule
